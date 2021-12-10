@@ -1,10 +1,10 @@
 package cli
 
 import (
-	"dyaiclient/config"
-	"dyaiclient/diff"
-	"dyaiclient/monitor"
-	"dyaiclient/utils"
+	"dyaic/config"
+	"dyaic/diff"
+	"dyaic/monitor"
+	"dyaic/utils"
 	"fmt"
 	"io/fs"
 	"log"

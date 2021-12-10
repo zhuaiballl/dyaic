@@ -1,6 +1,6 @@
 package main
 
-import "dyaiclient/cli"
+import "dyaic/cli"
 
 func main() {
 	c := cli.CLI{}
