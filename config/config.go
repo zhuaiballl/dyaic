@@ -1,6 +1,7 @@
 package config
 
 const (
-	TempLocation = "tmp"
-	RepoLocation = "repo"
+	defaultRepoDir = "~/.dyaic"
+	TempLocation   = "tmp"
+	RepoLocation   = "repo"
 )
