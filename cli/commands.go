@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func (cli *CLI) commit(loc string) {
@@ -63,6 +64,35 @@ func (cli *CLI) commit(loc string) {
 	}
 }
 
+func (cli *CLI) hashFile(loc string) {
+	hashBegin := time.Now()
+	if loc == "" {
+		loc = config.TempLocation
+	}
+	fmt.Println(diff.Md5File(loc))
+	hashEnd := time.Now()
+	fmt.Println(hashEnd.Sub(hashBegin))
+}
+
+func (cli *CLI) hashLoc(loc string) {
+	if loc == "" {
+		loc = config.TempLocation
+	}
+	err := filepath.Walk(loc, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		diff.Md5FileTest(path)
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func (cli *CLI) printDiff(loc string) {
 	if loc == "" {
 		loc = config.TempLocation
@@ -102,6 +132,45 @@ func (cli *CLI) printDiff(loc string) {
 	}
 }
 
+func (cli *CLI) saveDiff(loc string) {
+	if loc == "" {
+		loc = config.TempLocation
+	}
+	locLen := len(loc)
+	err := filepath.Walk(loc, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rLoc := path[locLen:]
+		repoLoc := config.RepoLocation + rLoc
+		repoInfo, err := os.Stat(repoLoc)
+
+		if utils.Exist(err) {
+			if info.IsDir() {
+				return nil
+			}
+			if info.ModTime().After(repoInfo.ModTime()) { // file has been modified, sync needed
+				chs := diff.GenerateChanges(repoLoc, path)
+				if len(chs.Item) == 0 {
+					return nil
+				}
+				fmt.Println("File has been modified:", rLoc)
+				diff.SaveDyaicDiff(repoLoc, path)
+			}
+		} else { // new file (or folder), creation needed
+			if info.IsDir() {
+				fmt.Println("New folder:", repoLoc)
+			} else {
+				fmt.Println("New file:", rLoc)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func (cli *CLI) printFolder(loc string) {
 	if loc == "" {
 		loc = config.TempLocation
@@ -110,7 +179,7 @@ func (cli *CLI) printFolder(loc string) {
 		if err != nil {
 			return err
 		}
-		fmt.Println(path, info.ModTime())
+		fmt.Println(path, info.ModTime(), info.Size())
 		return nil
 	})
 	if err != nil {

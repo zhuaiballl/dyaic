@@ -2,7 +2,9 @@ package diff
 
 import (
 	"bufio"
+	"dyaic/config"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -116,6 +118,42 @@ func GenerateDiff(src, dst []string) {
 		}
 	}
 	fmt.Println(colors[MOVE])
+}
+
+func SaveDiff(old, new string) {
+	src, err := getFileLines(old)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	dst, err := getFileLines(new)
+	if err != nil {
+		log.Panic(err)
+	}
+	script := shortestEditScript(src, dst)
+	f, err := os.Create(config.RepoLocation + "/diff")
+	defer f.Close()
+	if err != nil {
+		log.Panic(err)
+	}
+	srcIndex, dstIndex := 0, 0
+
+	for _, op := range script {
+		switch op {
+		case INSERT:
+			io.WriteString(f, "+"+dst[dstIndex])
+			dstIndex += 1
+
+		case MOVE:
+			//fmt.Println(colors[op] + " " + src[srcIndex])
+			srcIndex += 1
+			dstIndex += 1
+
+		case DELETE:
+			io.WriteString(f, "-"+src[srcIndex])
+			srcIndex += 1
+		}
+	}
 }
 
 func shortestEditScript(src, dst []string) []operation {
