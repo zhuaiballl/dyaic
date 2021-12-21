@@ -93,6 +93,41 @@ func (cli *CLI) hashLoc(loc string) {
 	}
 }
 
+func (cli *CLI) patch(loc string) {
+	if loc == "" {
+		loc = config.TempLocation
+	}
+	locLen := len(loc)
+	err := filepath.Walk(loc, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rLoc := path[locLen:]
+		repoLoc := config.RepoLocation + rLoc
+		//repoInfo, err := os.Stat(repoLoc)
+
+		if utils.Exist(err) {
+			if info.IsDir() {
+				return nil
+			}
+			if !utils.SameFile(path, repoLoc) { // file has been modified, sync needed
+				diff.GetPatch(repoLoc, loc, repoLoc)
+				fmt.Println("Generated patch file ", repoLoc)
+			}
+		} else { // new file (or folder), creation needed
+			if info.IsDir() {
+				fmt.Println("New folder:", repoLoc)
+			} else {
+				fmt.Println("New file:", rLoc)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func (cli *CLI) printDiff(loc string) {
 	if loc == "" {
 		loc = config.TempLocation
