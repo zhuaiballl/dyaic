@@ -69,7 +69,7 @@ func (cli *CLI) hashFile(loc string) {
 	if loc == "" {
 		loc = config.TempLocation
 	}
-	fmt.Println(diff.Md5File(loc))
+	fmt.Println(utils.Md5File(loc))
 	hashEnd := time.Now()
 	fmt.Println(hashEnd.Sub(hashBegin))
 }
@@ -85,7 +85,7 @@ func (cli *CLI) hashLoc(loc string) {
 		if info.IsDir() {
 			return nil
 		}
-		diff.Md5FileTest(path)
+		utils.Md5FileTest(path)
 		return nil
 	})
 	if err != nil {
