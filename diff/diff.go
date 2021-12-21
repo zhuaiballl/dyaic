@@ -19,3 +19,12 @@ func GetPatch(old, new, patchName string) {
 		log.Panic(err)
 	}
 }
+
+func GetBSPatch(old, new, patchName string) {
+	cmd := exec.Command("bsdiff", old, new, patchName)
+	err := cmd.Run()
+
+	if err != nil { // bsdiff returns 0 on success and -1 on failure
+		log.Panic(err)
+	}
+}

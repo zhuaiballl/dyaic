@@ -111,8 +111,8 @@ func (cli *CLI) patch(loc string) {
 				return nil
 			}
 			if !utils.SameFile(path, repoLoc) { // file has been modified, sync needed
-				diff.GetPatch(repoLoc, loc, repoLoc)
-				fmt.Println("Generated patch file ", repoLoc)
+				diff.GetBSPatch(repoLoc, path, repoLoc+".patch")
+				fmt.Println("Generated patch file ", repoLoc, ".patch")
 			}
 		} else { // new file (or folder), creation needed
 			if info.IsDir() {
