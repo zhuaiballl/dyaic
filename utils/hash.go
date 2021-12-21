@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/md5"
 	"fmt"
 	"github.com/jackpal/bencode-go"
@@ -60,4 +61,10 @@ func Ben(filepath string) []byte {
 		log.Panic(err)
 	}
 	return nil
+}
+
+func SameFile(a, b string) bool {
+	md5A := Md5File(a)
+	md5B := Md5File(b)
+	return bytes.Compare(md5A, md5B) == 0
 }
