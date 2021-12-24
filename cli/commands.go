@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func (cli *CLI) commit(loc string) {
+func (cli *CLI) commit(loc string, bs bool) {
 	if loc == "" {
 		loc = config.TempLocation
 	}
@@ -33,8 +33,13 @@ func (cli *CLI) commit(loc string) {
 			if info.ModTime().After(repoInfo.ModTime()) { // file has been modified, sync needed
 				fmt.Println("File has been modified:", rLoc)
 				patchName := repoLoc + ".patch"
-				diff.GenBSPatch(repoLoc, path, patchName)
-				diff.BSPatch(repoLoc, repoLoc, patchName, true)
+				if bs {
+					diff.GenBSPatch(repoLoc, path, patchName)
+					diff.BSPatch(repoLoc, repoLoc, patchName, true)
+				} else {
+					diff.GenPatch(repoLoc, path, patchName)
+					diff.Patch(repoLoc, repoLoc, patchName, false)
+				}
 				fmt.Println("Updated.")
 				// TODO: send changes tx
 				// TODO: sync changes with other nodes
@@ -71,7 +76,7 @@ func (cli *CLI) hashFile(loc string) {
 	fmt.Println(hashEnd.Sub(hashBegin))
 }
 
-func (cli *CLI) patch(loc string) {
+func (cli *CLI) patch(loc string, bs bool) {
 	if loc == "" {
 		loc = config.TempLocation
 	}
@@ -90,7 +95,12 @@ func (cli *CLI) patch(loc string) {
 			}
 			if !utils.SameFile(path, repoLoc) { // file has been modified, sync needed
 				fmt.Println("File has been modified:", rLoc, ", file size: ", info.Size())
-				diff.GenBSPatch(repoLoc, path, repoLoc+".patch")
+				patchName := repoLoc + ".patch"
+				if bs {
+					diff.GenBSPatch(repoLoc, path, patchName)
+				} else {
+					diff.GenPatch(repoLoc, path, patchName)
+				}
 				fmt.Println("Generated patch file ", repoLoc, ".patch")
 			}
 		} else { // new file (or folder), creation needed
