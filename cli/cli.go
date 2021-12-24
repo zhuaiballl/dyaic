@@ -11,6 +11,7 @@ type CLI struct{}
 
 func (cli *CLI) printUsage() {
 	fmt.Println("Usage:")
+	fmt.Println("  bspatch -loc LOCATION - Run bsdiff for files in LOCATION")
 	fmt.Println("  commit -loc LOCATION - Commit changes in LOCATION")
 	fmt.Println("  diff -loc LOCATION - Show changes in LOCATION")
 	fmt.Println("  patch -loc LOCATION - Generate patch file for files in LOCATION")
@@ -27,12 +28,16 @@ func (cli *CLI) validateArgs() {
 
 func (cli *CLI) Run() {
 	cli.validateArgs()
+	bscommtCmd := flag.NewFlagSet("bscommit", flag.ExitOnError)
+	bspatchCmd := flag.NewFlagSet("bspatch", flag.ExitOnError)
 	commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
 	diffCmd := flag.NewFlagSet("diff", flag.ExitOnError)
 	patchCmd := flag.NewFlagSet("patch", flag.ExitOnError)
 	printCmd := flag.NewFlagSet("print", flag.ExitOnError)
 	watchCmd := flag.NewFlagSet("watch", flag.ExitOnError)
 
+	bscommtLocation := bscommtCmd.String("loc", "", "location to be committed")
+	bspatchLocation := bspatchCmd.String("loc", "", "location of files we calc bspatch for")
 	commitLocation := commitCmd.String("loc", "", "location to be committed")
 	diffLocation := diffCmd.String("loc", "", "location where changes should be showed")
 	patchLocation := patchCmd.String("loc", "", "location of files we calc patch for")
@@ -40,6 +45,16 @@ func (cli *CLI) Run() {
 	watchLocation := watchCmd.String("loc", "", "location to be watched")
 
 	switch os.Args[1] {
+	case "bscommit":
+		err := bscommtCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "bspatch":
+		err := bspatchCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	case "commit":
 		err := commitCmd.Parse(os.Args[2:])
 		if err != nil {
@@ -67,8 +82,16 @@ func (cli *CLI) Run() {
 		}
 	}
 
+	if bscommtCmd.Parsed() {
+		cli.commit(*bscommtLocation, true)
+	}
+
+	if bspatchCmd.Parsed() {
+		cli.patch(*bspatchLocation, true)
+	}
+
 	if commitCmd.Parsed() {
-		cli.commit(*commitLocation)
+		cli.commit(*commitLocation, false)
 	}
 
 	if diffCmd.Parsed() {
@@ -76,7 +99,7 @@ func (cli *CLI) Run() {
 	}
 
 	if patchCmd.Parsed() {
-		cli.patch(*patchLocation)
+		cli.patch(*patchLocation, false)
 	}
 
 	if printCmd.Parsed() {
