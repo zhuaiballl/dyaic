@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"time"
 )
@@ -25,6 +26,20 @@ func GenPatch(old, new, patchName string) {
 	fmt.Println(patchName, ": diff finished in", endTime.Sub(beginTime))
 }
 
+func Patch(old, new, patchName string, clean bool) {
+	cmd := exec.Command("patch", old, "-i", patchName, "-o", new)
+	err := cmd.Run()
+	if err != nil {
+		log.Panic(err)
+	}
+	if clean {
+		err = os.Remove(patchName)
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+}
+
 func GenBSPatch(old, new, patchName string) {
 	cmd := exec.Command("bsdiff", old, new, patchName)
 	beginTime := time.Now()
@@ -35,4 +50,18 @@ func GenBSPatch(old, new, patchName string) {
 	}
 	endTime := time.Now()
 	fmt.Println(patchName, ": bsdiff finished in", endTime.Sub(beginTime))
+}
+
+func BSPatch(old, new, patchName string, clean bool) {
+	cmd := exec.Command("bspatch", old, new, patchName)
+	err := cmd.Run()
+	if err != nil {
+		log.Panic(err)
+	}
+	if clean {
+		err = os.Remove(patchName)
+		if err != nil {
+			log.Panic(err)
+		}
+	}
 }
