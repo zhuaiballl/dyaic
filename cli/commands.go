@@ -74,25 +74,6 @@ func (cli *CLI) hashFile(loc string) {
 	fmt.Println(hashEnd.Sub(hashBegin))
 }
 
-func (cli *CLI) hashLoc(loc string) {
-	if loc == "" {
-		loc = config.TempLocation
-	}
-	err := filepath.Walk(loc, func(path string, info fs.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-		utils.Md5FileTest(path)
-		return nil
-	})
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
 func (cli *CLI) patch(loc string) {
 	if loc == "" {
 		loc = config.TempLocation
