@@ -32,12 +32,9 @@ func (cli *CLI) commit(loc string) {
 			}
 			if info.ModTime().After(repoInfo.ModTime()) { // file has been modified, sync needed
 				fmt.Println("File has been modified:", rLoc)
-				// diff.ShowDiff(repoLoc, path)
-				chs := diff.GenerateChanges(repoLoc, path)
-				err = diff.Recover(repoLoc, &chs)
-				if err != nil {
-					return err
-				}
+				patchName := repoLoc + ".patch"
+				diff.GenBSPatch(repoLoc, path, patchName)
+				diff.BSPatch(repoLoc, repoLoc, patchName, true)
 				fmt.Println("Updated.")
 				// TODO: send changes tx
 				// TODO: sync changes with other nodes
