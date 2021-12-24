@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GetPatch(old, new, patchName string) {
+func GenPatch(old, new, patchName string) {
 	fmt.Println(patchName, ": diff begin")
 	beginTime := time.Now()
 	patch, err := exec.Command("diff", old, new).Output()
@@ -25,7 +25,7 @@ func GetPatch(old, new, patchName string) {
 	fmt.Println(patchName, ": diff finished in", endTime.Sub(beginTime))
 }
 
-func GetBSPatch(old, new, patchName string) {
+func GenBSPatch(old, new, patchName string) {
 	cmd := exec.Command("bsdiff", old, new, patchName)
 	beginTime := time.Now()
 	fmt.Println(patchName, ": bsdiff begin")
