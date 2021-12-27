@@ -38,7 +38,7 @@ func (cli *CLI) commit(loc string, bs bool) {
 					diff.BSPatch(repoLoc, repoLoc, patchName, true)
 				} else {
 					diff.GenPatch(repoLoc, path, patchName)
-					diff.Patch(repoLoc, repoLoc, patchName, false)
+					diff.Patch(repoLoc, repoLoc, patchName, true)
 				}
 				fmt.Println("Updated.")
 				// TODO: send changes tx
