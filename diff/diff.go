@@ -1,11 +1,14 @@
 package diff
 
 import (
+	"dyaic/utils"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -13,17 +16,62 @@ func GenPatch(old, new, patchName string) {
 	fmt.Println(patchName, ": diff begin")
 	beginTime := time.Now()
 	patch, err := exec.Command("diff", old, new).Output()
-	fmt.Println(string(patch))
+	//fmt.Println(string(patch))
 	// diff returns exit code 1 if diff is found, should not panic this "error"
 	//if err != nil {
 	//	log.Panic(err)
 	//}
-	err = ioutil.WriteFile(patchName+".patch", patch, 0644)
+	err = ioutil.WriteFile(patchName, patch, 0644)
 	if err != nil {
 		log.Panic(err)
 	}
 	endTime := time.Now()
 	fmt.Println(patchName, ": diff finished in", endTime.Sub(beginTime))
+	info, err := os.Stat(patchName)
+	if err != nil {
+		log.Panic(err)
+	}
+	fmt.Println("patch size:", info.Size())
+}
+
+func GenPatchForDirectory(old, new string) {
+	locLen := len(new)
+	beginTime := time.Now()
+	repoSize := int64(0)
+	err := filepath.Walk(new, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rLoc := path[locLen:]
+		oldLoc := old + rLoc
+		_, err = os.Stat(oldLoc)
+		if !info.IsDir() {
+			repoSize += info.Size()
+		}
+		if utils.Exist(err) {
+			if info.IsDir() {
+				return nil
+			}
+			if !utils.SameFile(path, oldLoc) { // file has been modified, sync needed
+				fmt.Println("File has been modified:", rLoc, ", file size: ", info.Size())
+				patchName := path + ".patch"
+				GenPatch(oldLoc, path, patchName)
+				fmt.Println("Generated patch file ", oldLoc, ".patch")
+			}
+		} else { // new file (or folder), creation needed
+			if info.IsDir() {
+				fmt.Println("New folder:", rLoc)
+			} else {
+				fmt.Println("New file:", rLoc)
+			}
+		}
+		return nil
+	})
+	endTime := time.Now()
+	fmt.Println("Gen patch for directory in", endTime.Sub(beginTime), ", directory size is", repoSize)
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func Patch(old, new, patchName string, clean bool) {

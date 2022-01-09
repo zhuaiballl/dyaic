@@ -66,6 +66,20 @@ func (cli *CLI) commit(loc string, bs bool) {
 	}
 }
 
+func (cli *CLI) gitwalker() {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Panic(err)
+	}
+	gitwalkerDir := homedir + "/.gitwalker/"
+	for d := 1; ; d++ {
+		newDir := gitwalkerDir + fmt.Sprintf("%04d", d)
+		oldDir := gitwalkerDir + fmt.Sprintf("%04d", d+1)
+		fmt.Printf("Start Patching %04d~%04d\n", d+1, d)
+		diff.GenPatchForDirectory(oldDir, newDir)
+	}
+}
+
 func (cli *CLI) hashFile(loc string) {
 	hashBegin := time.Now()
 	if loc == "" {

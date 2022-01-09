@@ -14,6 +14,7 @@ func (cli *CLI) printUsage() {
 	fmt.Println("  bspatch -loc LOCATION - Run bsdiff for files in LOCATION")
 	fmt.Println("  commit -loc LOCATION - Commit changes in LOCATION")
 	fmt.Println("  diff -loc LOCATION - Show changes in LOCATION")
+	fmt.Println("  gw Execute dyaic in gitwalker generated repos")
 	fmt.Println("  patch -loc LOCATION - Generate patch file for files in LOCATION")
 	fmt.Println("  print -loc LOCATION - Show files in LOCATION")
 	fmt.Println("  watch -loc LOCATION - Start watching LOCATION")
@@ -32,6 +33,7 @@ func (cli *CLI) Run() {
 	bspatchCmd := flag.NewFlagSet("bspatch", flag.ExitOnError)
 	commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
 	diffCmd := flag.NewFlagSet("diff", flag.ExitOnError)
+	gwCmd := flag.NewFlagSet("gw", flag.ExitOnError)
 	patchCmd := flag.NewFlagSet("patch", flag.ExitOnError)
 	printCmd := flag.NewFlagSet("print", flag.ExitOnError)
 	watchCmd := flag.NewFlagSet("watch", flag.ExitOnError)
@@ -62,6 +64,11 @@ func (cli *CLI) Run() {
 		}
 	case "diff":
 		err := diffCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "gw":
+		err := gwCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -96,6 +103,10 @@ func (cli *CLI) Run() {
 
 	if diffCmd.Parsed() {
 		cli.printDiff(*diffLocation)
+	}
+
+	if gwCmd.Parsed() {
+		cli.gitwalker()
 	}
 
 	if patchCmd.Parsed() {
