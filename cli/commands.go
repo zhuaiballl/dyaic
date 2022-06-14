@@ -66,6 +66,20 @@ func (cli *CLI) commit(loc string, bs bool) {
 	}
 }
 
+func (cli *CLI) gitwalker() {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Panic(err)
+	}
+	gitwalkerDir := homedir + "/.gitwalker/"
+	for d := 1; ; d++ {
+		newDir := gitwalkerDir + fmt.Sprintf("%04d", d)
+		oldDir := gitwalkerDir + fmt.Sprintf("%04d", d+1)
+		fmt.Printf("Start Patching %04d~%04d\n", d+1, d)
+		diff.GenPatchForDirectory(oldDir, newDir)
+	}
+}
+
 func (cli *CLI) hashFile(loc string) {
 	hashBegin := time.Now()
 	if loc == "" {
@@ -87,14 +101,14 @@ func (cli *CLI) patch(loc string, bs bool) {
 		}
 		rLoc := path[locLen:]
 		repoLoc := config.RepoLocation + rLoc
-		//repoInfo, err := os.Stat(repoLoc)
+		repoInfo, err := os.Stat(repoLoc)
 
 		if utils.Exist(err) {
 			if info.IsDir() {
 				return nil
 			}
 			if !utils.SameFile(path, repoLoc) { // file has been modified, sync needed
-				fmt.Println("File has been modified:", rLoc, ", file size: ", info.Size())
+				fmt.Println("File has been modified:", rLoc, ", new file size: ", info.Size(), ", old file size: ", repoInfo.Size())
 				patchName := repoLoc + ".patch"
 				if bs {
 					diff.GenBSPatch(repoLoc, path, patchName)
