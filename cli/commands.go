@@ -101,14 +101,14 @@ func (cli *CLI) patch(loc string, bs bool) {
 		}
 		rLoc := path[locLen:]
 		repoLoc := config.RepoLocation + rLoc
-		//repoInfo, err := os.Stat(repoLoc)
+		repoInfo, err := os.Stat(repoLoc)
 
 		if utils.Exist(err) {
 			if info.IsDir() {
 				return nil
 			}
 			if !utils.SameFile(path, repoLoc) { // file has been modified, sync needed
-				fmt.Println("File has been modified:", rLoc, ", file size: ", info.Size())
+				fmt.Println("File has been modified:", rLoc, ", new file size: ", info.Size(), ", old file size: ", repoInfo.Size())
 				patchName := repoLoc + ".patch"
 				if bs {
 					diff.GenBSPatch(repoLoc, path, patchName)
