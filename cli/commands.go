@@ -3,6 +3,7 @@ package cli
 import (
 	"dyaic/config"
 	"dyaic/diff"
+	"dyaic/ipfs"
 	"dyaic/monitor"
 	"dyaic/utils"
 	"fmt"
@@ -116,6 +117,13 @@ func (cli *CLI) patch(loc string, bs bool) {
 					diff.GenPatch(repoLoc, path, patchName)
 				}
 				fmt.Println("Generated patch file ", repoLoc, ".patch")
+
+				// upload patch file to ipfs
+				err = ipfs.Upload(patchName)
+				if err != nil {
+					return err
+				}
+				fmt.Println("Uploaded it to IPFS")
 			}
 		} else { // new file (or folder), creation needed
 			if info.IsDir() {
